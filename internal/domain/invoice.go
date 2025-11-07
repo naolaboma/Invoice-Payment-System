@@ -24,10 +24,12 @@ type InvoiceRepository interface {
 	Create(invoice *Invoice) error
 	FindById(id primitive.ObjectID) (*Invoice, error)
 	UpdateStatus(id primitive.ObjectID, status string) error
+	FindBySenderEmail(email string) ([]*Invoice, error)
 }
 
 type InvoiceUsecase interface {
 	CreateInvoice(invoice *Invoice) error
 	GetInvoice(id string) (*Invoice, error)
-	UpdateInvoice(id string, status string) error
+	UpdateInvoiceStatus(id string, status string) error
+	GetInvoicesBySender(email string) ([]*Invoice, error)
 }

@@ -1,29 +1,32 @@
 package domain
 
 import (
-	"context"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Payment struct {
-	ID        string    `bson:"_id,omitempty" json:"id"`
-	InvoiceID string    `bson:"invoicID" json:"invoicID"`
-	Reference string    `bson:"reference" json:"reference"`
-	Amount    float64   `bson:"amount" json:"amount"`
-	Status    string    `bson:"status" json:"status"`
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
-	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt"`
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	InvoiceID primitive.ObjectID `bson:"invoicID" json:"invoicID"`
+	Reference string             `bson:"reference" json:"reference"`
+	Amount    float64            `bson:"amount" json:"amount"`
+	Status    string             `bson:"status" json:"status"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
 }
 
 //interfaces
 
 type PaymentRepository interface {
-	LogPayment(ctx context.Context, payment *Payment) error
-	FindByReference(ctx context.Context, ref string) (*Payment, error)
-	UpdateStatus(ctx context.Context, ref string, status string) error
+	LogPayment(payment *Payment) error
+	FindByReference(ref string) (*Payment, error)
+	FindByInvoiceID(invoiceID primitive.ObjectID) ([]*Payment, error)
+	UpdateStatus(ref string, status string) error
 }
 
 type PaymentUsecase interface {
-	HandleCallBack(ctx context.Context, payment *Payment) error
-	GetPaymentByReference(ctx context.Context, ref string) (*Payment, error)
+	HandleCallBack(payment *Payment) error
+	GetPaymentByReference(ref string) (*Payment, error)
+	GetPaymentsByInvoice(invoiceID string) ([]*Payment, error)
 }
