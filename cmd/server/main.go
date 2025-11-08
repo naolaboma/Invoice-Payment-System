@@ -4,14 +4,18 @@ import (
 	"Invoice-Payment-System/internal/delivery/controllers"
 	"Invoice-Payment-System/internal/delivery/router"
 	"Invoice-Payment-System/internal/infrastructure/database"
+	"Invoice-Payment-System/internal/infrastructure/gateway"
 	"Invoice-Payment-System/internal/repository"
 	"Invoice-Payment-System/internal/usecase"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	_ = godotenv.Load()
 	mongoURI := os.Getenv("MONGO_URI")
 	dbName := os.Getenv("DB_NAME")
 
@@ -20,11 +24,13 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 	defer db.Close()
+	
+	paymentGateway := gateway.NewSantimPayGateway()
 
 	invoiceRepo := repository.NewInvoiceRepository(db)
 	paymentRepo := repository.NewPaymentRepository(db)
 
-	invoiceUsecase := usecase.NewInvoiceUseCase(invoiceRepo)
+	invoiceUsecase := usecase.NewInvoiceUseCase(invoiceRepo, paymentGateway)
 	paymentUsecase := usecase.NewPaymentUseCase(invoiceRepo, paymentRepo)
 
 	invoiceHandler := controllers.NewInvoiceController(invoiceUsecase)

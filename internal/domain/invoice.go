@@ -14,6 +14,7 @@ type Invoice struct {
 	Currency     string             `bson:"currency" json:"currency"`
 	Description  string             `bson:"description" json:"description"`
 	Status       string             `bson:"status" json:"status"`
+	PaymentLink  string             `bson:"paymentLink,omitempty" json:"payment_link,omitempty"`
 	SantimPayRef *string            `bson:"santimPayRef,omitempty" json:"santimPayRef,omitempty"`
 	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
@@ -27,8 +28,12 @@ type InvoiceRepository interface {
 	FindBySenderEmail(email string) ([]*Invoice, error)
 }
 
+type PaymentGateway interface {
+	CreatePayment(invoice *Invoice) (paymentURL, reference string, err error)
+}
+
 type InvoiceUsecase interface {
-	CreateInvoice(invoice *Invoice) error
+	CreateInvoice(invoice *Invoice) (string, error)
 	GetInvoice(id string) (*Invoice, error)
 	UpdateInvoiceStatus(id string, status string) error
 	GetInvoicesBySender(email string) ([]*Invoice, error)

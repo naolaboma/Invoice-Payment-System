@@ -31,13 +31,17 @@ func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 		return
 	}
 	
-	err := h.InvoiceUsecase.CreateInvoice(&invoice)
+	paymentURL, err := h.InvoiceUsecase.CreateInvoice(&invoice)
 	if err !=nil{
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	
-	c.JSON(http.StatusCreated, invoice)
+	c.JSON(http.StatusCreated, gin.H{
+		"message":      "Invoice created successfully",
+		"invoice":      invoice,
+		"payment_link": paymentURL,
+	})
 }
 func (h *InvoiceHandler) GetInvoiceByID(c *gin.Context) {
 	id := c.Param("id")
