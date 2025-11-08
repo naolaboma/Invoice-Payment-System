@@ -14,6 +14,7 @@ func SetupRouter(invoiceHandler *controllers.InvoiceHandler, paymentHandler *con
 		{
 			invoices.POST("/", invoiceHandler.CreateInvoice)
 			invoices.GET("/", invoiceHandler.GetInvoicesBySender)
+			invoices.GET("/:id", invoiceHandler.GetInvoiceByID)
 		}
 		payments := v1.Group("/payments")
 		{
