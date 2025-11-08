@@ -39,6 +39,15 @@ func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 	
 	c.JSON(http.StatusCreated, invoice)
 }
+func (h *InvoiceHandler) GetInvoiceByID(c *gin.Context) {
+	id := c.Param("id")
+	invoice, err := h.InvoiceUsecase.GetInvoice(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
+}
 
 func (h *InvoiceHandler) GetInvoicesBySender(c *gin.Context) {
 	email := c.Query("email")
