@@ -1,4 +1,4 @@
-package controller
+package controllers
 import(
 	"Invoice-Payment-System/internal/domain"
 	"net/http"
