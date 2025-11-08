@@ -21,7 +21,7 @@ func NewInvoiceController(invoiceUsecase domain.InvoiceUsecase) *InvoiceHandler{
 
 func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 	var invoice domain.Invoice
-	if err := c.ShouldBindBodyWithJSON(&invoice); err != nil{
+	if err := c.ShouldBindJSON(&invoice); err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
