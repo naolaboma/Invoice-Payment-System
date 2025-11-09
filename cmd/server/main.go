@@ -7,6 +7,7 @@ import (
 	"Invoice-Payment-System/internal/infrastructure/gateway"
 	"Invoice-Payment-System/internal/repository"
 	"Invoice-Payment-System/internal/usecase"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,8 +16,12 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println("⚠️  No .env file found, using system environment variables")
+	}
+
 	mongoURI := os.Getenv("MONGO_URI")
+	fmt.Println("MONGO_URI:", mongoURI)
 	dbName := os.Getenv("DB_NAME")
 
 	db, err := database.NewMongoDB(mongoURI, dbName)
@@ -24,7 +29,7 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 	defer db.Close()
-	
+
 	paymentGateway := gateway.NewSantimPayGateway()
 
 	invoiceRepo := repository.NewInvoiceRepository(db)
