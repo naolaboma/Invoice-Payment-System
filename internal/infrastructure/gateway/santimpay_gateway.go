@@ -11,26 +11,34 @@ import (
 )
 
 type SantimPayGateway struct {
-	apiKey  string
-	baseURL string
-	client  *http.Client
+	apiKey     string
+	baseURL    string
+	merchantID string
+	client     *http.Client
 }
 
 func NewSantimPayGateway() domain.PaymentGateway {
 	return &SantimPayGateway{
-		apiKey:  os.Getenv("SANTIMPAY_API_KEY"),
-		baseURL: os.Getenv("SANTIMPAY_API_URL"),
-		client:  &http.Client{Timeout: 10 * time.Second},
+		apiKey:     os.Getenv("SANTIMPAY_API_KEY"),
+		baseURL:    os.Getenv("SANTIMPAY_API_URL"),
+		merchantID: os.Getenv("SANTIMPAY_MERCHANT_ID"),
+		client:     &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 func (g *SantimPayGateway) CreatePayment(invoice *domain.Invoice) (string, string, error) {
+	token, err := GenerateSignedToken(invoice.Amount, invoice.Description, g.merchantID)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate signed token: %v", err)
+	}
 	payload := map[string]interface{}{
-		"amount":    invoice.Amount,
-		"currency":  "ETB",
-		"reference": invoice.ID.Hex(),
-		"email":     invoice.PayerEmail,
-		"callback":  os.Getenv("CALLBACK_URL"),
+		"id":                 invoice.ID.Hex(),
+		"reason":             invoice.Description,
+		"merchantID":         g.merchantID,
+		"token":              token,
+		"successRedirectUrl": os.Getenv("SUCCESS_REDIRECT_URL"),
+		"failureRedirectUrl": os.Getenv("FAILURE_REDIRECT_URL"),
+		"notifyUrl":          os.Getenv("CALLBACK_URL"),
 	}
 
 	body, err := json.Marshal(payload)
@@ -38,7 +46,7 @@ func (g *SantimPayGateway) CreatePayment(invoice *domain.Invoice) (string, strin
 		return "", "", fmt.Errorf("failed to marshal SantimPay payload: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", g.baseURL+"/payments", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", g.baseURL+"/initiate-payment", bytes.NewBuffer(body))
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create SantimPay request: %v", err)
 	}
