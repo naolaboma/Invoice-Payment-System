@@ -3,6 +3,7 @@ package usecase
 import (
 	"Invoice-Payment-System/internal/domain"
 	"errors"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,20 +25,29 @@ func (uc *InvoiceUseCase) CreateInvoice(invoice *domain.Invoice) (string, error)
 	if invoice.Amount <= 0 {
 		return "", errors.New("invoice amount must be positive")
 	}
-	invoice.Status = "PENDING"
-	invoice.CreatedAt = time.Now()
-	invoice.UpdatedAt = time.Now()
 	invoice.ID = primitive.NewObjectID()
+	invoice.Status = "PENDING"
+	now := time.Now()
+	invoice.CreatedAt = now
+	invoice.UpdatedAt = now
+	
 	if err := uc.InvoiceRepo.Create(invoice); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to save invoice: %v", err)
 	}
+	
 	paymentURL, reference, err := uc.PaymentGate.CreatePayment(invoice)
 	if err != nil {
-		return "", err
+		_ = uc.InvoiceRepo.UpdateStatus(invoice.ID, "FAILED")
+		return "", fmt.Errorf("payment initiation failed: %v", err)
 	}
 
 	invoice.PaymentLink = paymentURL
 	invoice.SantimPayRef = &reference
+	invoice.UpdatedAt = time.Now()
+	
+	if err := uc.InvoiceRepo.UpdatePaymentInfo(invoice.ID, paymentURL, reference); err != nil{
+		return "", err
+	}
 
 	return paymentURL, nil
 }

@@ -26,6 +26,7 @@ type InvoiceRepository interface {
 	FindById(id primitive.ObjectID) (*Invoice, error)
 	UpdateStatus(id primitive.ObjectID, status string) error
 	FindBySenderEmail(email string) ([]*Invoice, error)
+	UpdatePaymentInfo(id primitive.ObjectID, paymentLink, reference string) error
 }
 
 type PaymentGateway interface {

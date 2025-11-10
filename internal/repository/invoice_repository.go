@@ -113,3 +113,27 @@ func (ir *InvoiceRepo) FindBySenderEmail(email string) ([]*domain.Invoice, error
 	}
 	return invoices, nil
 }
+
+func (ir *InvoiceRepo) UpdatePaymentInfo(id primitive.ObjectID, paymentLink, reference string) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	
+	update := bson.M{
+		"$set": bson.M{
+			"paymentLink": paymentLink,
+			"santimPayRef": reference,
+			"updatedAt": time.Now(),
+		},
+	}
+	
+	res, err := ir.collection.UpdateByID(ctx, id, update)
+	
+	if err != nil{
+		return fmt.Errorf("failed to update payment info: %w", err)
+	}
+	
+	if res.MatchedCount == 0{
+		return fmt.Errorf("invoice not found")
+	}
+	return nil
+}
