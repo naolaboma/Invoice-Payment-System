@@ -2,12 +2,14 @@ package router
 
 import (
 	"Invoice-Payment-System/internal/delivery/controllers"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(invoiceHandler *controllers.InvoiceHandler, paymentHandler *controllers.PaymentHandler) *gin.Engine{
+func SetupRouter(invoiceHandler *controllers.InvoiceHandler, paymentHandler *controllers.PaymentHandler) *gin.Engine {
 	router := gin.Default()
-	
+
 	v1 := router.Group("/api/v1")
 	{
 		invoices := v1.Group("/invoices")
@@ -22,5 +24,12 @@ func SetupRouter(invoiceHandler *controllers.InvoiceHandler, paymentHandler *con
 			payments.GET("/:ref", paymentHandler.GetPaymentByReference)
 		}
 	}
+	router.GET("/success", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Payment successful!"})
+	})
+
+	router.GET("/failure", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Payment failed. Please try again."})
+	})
 	return router
 }
