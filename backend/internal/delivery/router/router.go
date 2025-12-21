@@ -3,12 +3,24 @@ package router
 import (
 	"Invoice-Payment-System/internal/delivery/controllers"
 	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter(invoiceHandler *controllers.InvoiceHandler, paymentHandler *controllers.PaymentHandler) *gin.Engine {
 	router := gin.Default()
+
+	// CORS Configuration
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	v1 := router.Group("/api/v1")
 	{

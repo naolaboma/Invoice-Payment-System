@@ -1,42 +1,43 @@
 package controllers
-import(
+
+import (
 	"Invoice-Payment-System/internal/domain"
 	"net/http"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
-type InvoiceHandler struct{
+type InvoiceHandler struct {
 	InvoiceUsecase domain.InvoiceUsecase
-	Validate *validator.Validate
+	Validate       *validator.Validate
 }
 
-func NewInvoiceController(invoiceUsecase domain.InvoiceUsecase) *InvoiceHandler{
+func NewInvoiceController(invoiceUsecase domain.InvoiceUsecase) *InvoiceHandler {
 	return &InvoiceHandler{
 		InvoiceUsecase: invoiceUsecase,
-		Validate: validator.New(),
+		Validate:       validator.New(),
 	}
 }
 
 func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 	var invoice domain.Invoice
-	if err := c.ShouldBindJSON(&invoice); err != nil{
+	if err := c.ShouldBindJSON(&invoice); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	
-	if err := h.Validate.Struct(invoice); err != nil{
+
+	if err := h.Validate.Struct(invoice); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
 		return
 	}
-	
+
 	paymentURL, err := h.InvoiceUsecase.CreateInvoice(&invoice)
-	if err !=nil{
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message":      "Invoice created successfully",
 		"invoice":      invoice,
@@ -50,17 +51,17 @@ func (h *InvoiceHandler) GetInvoiceByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
+	c.JSON(http.StatusOK, invoice)
 }
 
 func (h *InvoiceHandler) GetInvoicesBySender(c *gin.Context) {
 	email := c.Query("email")
-	
+
 	invoices, err := h.InvoiceUsecase.GetInvoicesBySender(email)
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, invoices)
 }

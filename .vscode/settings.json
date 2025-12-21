@@ -1,0 +1,8 @@
+{
+  // Avoid VS Code fetching remote JSON schemas (blocked by proxy)
+  "json.schemaDownload.enable": false,
+  // Silence Tailwind at-rule lint noise
+  "css.lint.unknownAtRules": "ignore",
+  // Ensure TypeScript uses project config
+  "typescript.tsdk": "frontend/node_modules/typescript/lib"
+}

@@ -16,8 +16,12 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("⚠️  No .env file found, using system environment variables")
+	// Try loading from current directory first, then fallback to other locations if needed
+	if err := godotenv.Load(); err != nil {
+		// If not found in CWD, try looking up (useful for development in subfolders)
+		if err := godotenv.Load("../../.env"); err != nil {
+			log.Println("⚠️  No .env file found, using system environment variables")
+		}
 	}
 
 	mongoURI := os.Getenv("MONGO_URI")
